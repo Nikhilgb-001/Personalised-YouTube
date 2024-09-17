@@ -6,14 +6,13 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 
 const registerUser = asyncHandler(async (req, res) => {
   // get user details from frontend
-  const { fullName, email, username, password } = req.body;
-  console.log("email:", email);
+  const { username, fullName, email, password } = req.body;
 
   // validation - not empty
   if (
-    [fullName, email, username, password].some((field) => field?.trim() === "")
+    [username, fullName, email, password].some((field) => field?.trim() === "")
   ) {
-    throw new ApiError(400, "All fields are required");
+    throw new ApiError("All fields are required");
   }
 
   // check if user already exists: username, email
@@ -22,18 +21,15 @@ const registerUser = asyncHandler(async (req, res) => {
   });
 
   if (existedUser) {
-    throw new ApiError(409, "User with email or username already exists");
+    throw new ApiError(409, "User with this email or username already exists");
   }
 
   // check for images, check for avatar
   const avatarLocalPath = req.files?.avatar[0]?.path;
-  console.log(avatarLocalPath);
-
   const coverImageLocalPath = req.files?.coverImage[0]?.path;
-  console.log(coverImageLocalPath);
 
   if (!avatarLocalPath) {
-    throw new ApiError(400, "Avatar is required");
+    throw new ApiError(400, "Avatar file is required");
   }
 
   // upload them to cloudinary, avatar
@@ -41,19 +37,20 @@ const registerUser = asyncHandler(async (req, res) => {
   const coverImage = await uploadOnCloudinary(coverImageLocalPath);
 
   if (!avatar) {
-    throw new ApiError(400, "Avatar is required");
+    throw new ApiError(400, "Avatar file is required");
   }
 
   // create user object - create entry in db
   const user = await User.create({
     fullName,
     avatar: avatar.url,
-    coverImage: coverImage?.url || "",
+    coverImage: coverImage.url || "",
     email,
     password,
     username: username.toLowerCase(),
   });
 
+  // remove password and refresh token field from response
   const createdUser = await User.findById(user._id).select(
     "-password -refreshToken"
   );
@@ -67,8 +64,6 @@ const registerUser = asyncHandler(async (req, res) => {
   return res
     .status(201)
     .json(new ApiResponse(200, createdUser, "User created successfully"));
-    
-  // remove password and refresh token field from response
 });
 
 export { registerUser };

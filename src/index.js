@@ -3,17 +3,17 @@ import connectDB from "./db/db.connection.js";
 import dotenv from "dotenv";
 
 dotenv.config({
-  path: "./env",
+  path: "./.env",
 });
 
 connectDB()
   .then(() => {
-    app.listen(process.env.PORT, () => {
-      console.log(`Server is running on port ${process.env.PORT}`);
+    app.listen(process.env.PORT || 8000, () => {
+      console.log(`⚙️ Server is running at port : ${process.env.PORT}`);
     });
   })
-  .catch((error) => {
-    console.log("MONGO db connection failed!!", error);
+  .catch((err) => {
+    console.log("MONGO db connection failed !!! ", err);
   });
 
 // second professional way to connect to DB the
