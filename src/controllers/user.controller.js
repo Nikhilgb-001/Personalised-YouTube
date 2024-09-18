@@ -125,7 +125,7 @@ const loginUser = asyncHandler(async (req, res) => {
   }
 
   // if the password is correct, generate access token and refresh token using the method created above
-  const { accessToken, refreshToken } = generateAccessAndRefreshTokens(
+  const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
     // pass the generated access token and refresh token to the user
     user._id
   );
